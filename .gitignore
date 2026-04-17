@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+reports/
+store_index_live.json
+sweep_output.log
+state.json

@@ -1,0 +1,76 @@
+name: Nightly Price Sweep
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 02:00 GMT daily — supermarkets update overnight
+  workflow_dispatch:        # manual trigger from GitHub Actions UI
+    inputs:
+      mode:
+        description: 'Sweep mode'
+        required: false
+        default: 'quick'
+        type: choice
+        options: [quick, full]
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # FastCRW runs as a Docker container
+      - name: Start FastCRW crawler
+        run: |
+          docker pull ghcr.io/fastcrw/fastcrw:latest || true
+          docker run -d \
+            --name fastcrw \
+            -p 3000:3000 \
+            -e API_KEY=${{ secrets.CRAWLER_API_KEY }} \
+            ghcr.io/fastcrw/fastcrw:latest || true
+          sleep 5
+
+      - name: Run price sweep
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CRAWLER_ENDPOINT: http://localhost:3000
+          CRAWLER_API_KEY: ${{ secrets.CRAWLER_API_KEY }}
+          RATE_LIMIT_SECS: '2.5'
+        run: |
+          MODE=${{ github.event.inputs.mode || 'quick' }}
+          if [ "$MODE" = "full" ]; then
+            python3 price_sweep_v2.py
+          else
+            python3 price_sweep_v2.py --quick
+          fi
+
+      - name: Upload store index artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: store-index-${{ github.run_id }}
+          path: store_index_live.json
+          if-no-files-found: ignore
+
+      - name: Post summary to Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_OPS_WEBHOOK }}
+        run: |
+          STATUS="${{ job.status }}"
+          if [ -f store_index_live.json ]; then
+            ITEMS=$(python3 -c "import json; d=json.load(open('store_index_live.json')); print(d.get('item_count','?'))")
+            MSG="✅ Nightly sweep done — $ITEMS items priced. store_index_live.json updated."
+          else
+            MSG="⚠️ Nightly sweep finished with status: $STATUS. No output file."
+          fi
+          [ -n "$DISCORD_WEBHOOK" ] && curl -s -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": \"$MSG\"}" || true
