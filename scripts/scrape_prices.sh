@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # TrolleyPriceBot - Nightly Price Scraper
 # Scrapes prices from Trolley.co.uk for monitored items
 
@@ -15,30 +16,30 @@ ITEMS=(
   "pasta_penne_500g:Penne Pasta 500g"
 )
 
-# Results array
-declare -a RESULTS
-
 scrape_item() {
   local item_key="$1"
   local search_term="$2"
-  local encoded_term=$(echo "$search_term" | sed 's/ /%20/g')
+  local encoded_term="${search_term// /%20}"
   
   # Fetch page
-  local html=$(curl -s -m 10 "https://www.trolley.co.uk/search/?q=${encoded_term}" 2>/dev/null)
+  local html
+  html=$(curl -s -m 10 "https://www.trolley.co.uk/search/?q=${encoded_term}" 2>/dev/null)
   
   # Extract prices per supermarket (simplified parsing)
+  local tesco_price asda_price sainsburys_price morrisons_price aldi_price lidl_price
+
   # Tesco
-  local tesco_price=$(echo "$html" | grep -oP 'Tesco.*?£\K[0-9]+\.[0-9]{2}' | head -1)
+  tesco_price=$(echo "$html" | perl -ne 'print "$1\n" if /Tesco.*?(?:£|&pound;)(\d+\.\d{2})/' | head -1)
   # ASDA
-  local asda_price=$(echo "$html" | grep -oP 'ASDA.*?£\K[0-9]+\.[0-9]{2}' | head -1)
+  asda_price=$(echo "$html" | perl -ne 'print "$1\n" if /ASDA.*?(?:£|&pound;)(\d+\.\d{2})/' | head -1)
   # Sainsbury's
-  local sainsburys_price=$(echo "$html" | grep -oP "Sainsbury's.*?£\K[0-9]+\.[0-9]{2}" | head -1)
+  sainsburys_price=$(echo "$html" | perl -ne 'print "$1\n" if /Sainsbury\x27s.*?(?:£|&pound;)(\d+\.\d{2})/' | head -1)
   # Morrisons
-  local morrisons_price=$(echo "$html" | grep -oP 'Morrisons.*?£\K[0-9]+\.[0-9]{2}' | head -1)
+  morrisons_price=$(echo "$html" | perl -ne 'print "$1\n" if /Morrisons.*?(?:£|&pound;)(\d+\.\d{2})/' | head -1)
   # Aldi
-  local aldi_price=$(echo "$html" | grep -oP 'Aldi.*?£\K[0-9]+\.[0-9]{2}' | head -1)
+  aldi_price=$(echo "$html" | perl -ne 'print "$1\n" if /Aldi.*?(?:£|&pound;)(\d+\.\d{2})/' | head -1)
   # Lidl
-  local lidl_price=$(echo "$html" | grep -oP 'Lidl.*?£\K[0-9]+\.[0-9]{2}' | head -1)
+  lidl_price=$(echo "$html" | perl -ne 'print "$1\n" if /Lidl.*?(?:£|&pound;)(\d+\.\d{2})/' | head -1)
   
   echo "{\"item_key\":\"$item_key\",\"prices\":{\"tesco\":${tesco_price:-null},\"asda\":${asda_price:-null},\"sainsburys\":${sainsburys_price:-null},\"morrisons\":${morrisons_price:-null},\"aldi\":${aldi_price:-null},\"lidl\":${lidl_price:-null}}}"
 }

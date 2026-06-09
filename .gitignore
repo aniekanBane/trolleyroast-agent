@@ -1,7 +1,43 @@
+old/
+
+# Environment
 .env
+.venv/
+venv/
+
+# Python
 __pycache__/
-*.pyc
-reports/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+.pytest_cache/
+
+# Alembic
+migrations/
+alembic.ini
+
+# State
+state.json
 store_index_live.json
 sweep_output.log
-state.json
+worker.log
+reports/
+
+# Aspire
+node_modules/
+.aspire/
+
+# Supabase
+supabase/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

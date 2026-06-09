@@ -1,0 +1,77 @@
+[project]
+name = "trolleyroast-agent"
+version = "2.0.0-beta.1"
+description = "Autonomous UK supermarket price monitoring service"
+readme = "README.md"
+authors = [
+    { name = "Dr Tosin", email = "dioscuri@gmail.com" },
+    { name = "Aniekan Jr", email = "77311836+aniekanBane@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "apscheduler>=3.11.2",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.14.1",
+    "resend>=2.30.1",
+]
+
+[project.scripts]
+trolleyroast-agent = "trolleyroast_agent.worker:main"
+
+[build-system]
+requires = ["uv_build>=0.11.19,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "devtools>=0.12.2",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+]
+ops = [
+    "alembic>=1.18.4",
+    "psycopg[binary]>=3.3.4",
+    "sqlalchemy>=2.0.50",
+    "sqlalchemy-utils>=0.42.1",
+]
+
+[tool.mypy]
+strict = true
+exclude = ["\\.venv"]
+plugins = ["pydantic.mypy"]
+
+enable_error_code = [
+    "ignore-without-code", 
+    "explicit-override", 
+    "redundant-self", 
+    "possibly-undefined", 
+    "truthy-bool",
+]
+pretty = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["no-untyped-def"]
+
+[tool.ruff.lint]
+select = [
+    "E",        # pycodestyle errors
+    "W",        # pycodestyle warnings
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "S",        # security (bandit)
+    "B",        # flake8-bugbear
+    "C4",       # flake8-comprehensions
+    "FA",       # flake8-future-annotations
+    "ASYNC",    # flake8-asyncio
+    "UP",       # pyupgrades
+]
+ignore = [
+    "E501",     # Line too long, handle manually
+    "S101",     # assert (allow in tests, deny in src via override)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
