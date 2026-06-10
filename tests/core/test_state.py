@@ -135,7 +135,7 @@ class TestAgentState:
         state.commit()
 
         # No .tmp file should remain
-        assert not (tmp_path / "state.json.tmp").exists()
+        assert not mock_state_path.with_suffix(".tmp").exists()
         # File should be valid JSON
         data = json.loads(mock_state_path.read_text(encoding="utf-8"))
         assert data["last_price_update"] == "2026-06-09T00:00:00"
