@@ -1,0 +1,33 @@
+name: TrolleyRoast Agent CI
+
+on:
+    push:
+        branches: [main]
+        paths-ignore: ["docs/**", "**/*.md"]
+    pull_request:
+        paths-ignore: ["docs/**", "**/*.md"]
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v6
+
+            - name: Set up Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version-file: ".python-version"
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+              with:
+                  version: "0.11.19"
+                  enable-cache: true
+
+            - name: Install the project
+              run: uv sync --locked --all-extras --dev
+
+            - name: Run tests
+              run: uv run pytest --no-cov

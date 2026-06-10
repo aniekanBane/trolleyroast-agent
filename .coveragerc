@@ -1,0 +1,14 @@
+[run]
+omit = 
+    */tests/*
+    */tests*.py
+
+[report]
+exclude_also = 
+    def __repr__
+    if self\.debug
+    def __str__
+    raise AssertionError 
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    @(abc\.)?abstractmethod
