@@ -30,10 +30,8 @@ dev = [
     "pytest-cov>=7.1.0",
 ]
 ops = [
-    "alembic>=1.18.4",
     "psycopg[binary]>=3.3.4",
     "sqlalchemy>=2.0.50",
-    "sqlalchemy-utils>=0.42.1",
 ]
 
 [tool.mypy]

@@ -17,22 +17,19 @@ build/
 .coverage
 
 # Alembic
-migrations/
-alembic.ini
+alembic**
 
 # State
 state.json
 store_index_live.json
 sweep_output.log
 worker.log
+logs/
 reports/
 
 # Aspire
 node_modules/
 .aspire/
-
-# Supabase
-supabase/
 
 # IDE
 .vscode/

@@ -27,7 +27,7 @@ class SupabaseSetting(BaseModel):
 
     project_url: HttpUrl
     ingest_path: str
-    service_key: str | None = None
+    api_key: str | None = None
     agent_key: str | None = None
 
     @computed_field
@@ -74,7 +74,7 @@ class EmailSettings(BaseModel):
 class ScraperSettings(BaseModel):
     """Scraper configurations."""
 
-    trolley_search_endpoint_url: HttpUrl
+    trolley_uk_base_url: HttpUrl
     price_drop_threshold: float = Field(default=0.08, ge=0.0, le=1.0)
     max_item_failures: int = Field(default=20, ge=1, le=50)
     rate_limit_seconds: float = Field(default=2.5, gt=1.0, lt=60.0)
