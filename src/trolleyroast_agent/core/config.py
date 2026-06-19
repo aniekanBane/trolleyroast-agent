@@ -74,10 +74,12 @@ class EmailSettings(BaseModel):
 class ScraperSettings(BaseModel):
     """Scraper configurations."""
 
-    trolley_uk_base_url: HttpUrl
     price_drop_threshold: float = Field(default=0.08, ge=0.0, le=1.0)
     max_item_failures: int = Field(default=20, ge=1, le=50)
     rate_limit_seconds: float = Field(default=2.5, gt=1.0, lt=60.0)
+    trolley_uk_search_url: HttpUrl = HttpUrl(
+        "https://www.trolley.co.uk/search/?from=search&q="
+    )
 
 
 class AppSettings(BaseSettings):
@@ -94,11 +96,11 @@ class AppSettings(BaseSettings):
 
     debug: bool = Field(default=False, frozen=True)
     tz: str = Field(default="Europe/London", frozen=True)
-
     logging: LoggingSettings = Field(default=LoggingSettings(), frozen=True)
-    supabase: SupabaseSetting
+
+    scraper: ScraperSettings = ScraperSettings()
     fastcrw: FastcrwSettings
-    scraper: ScraperSettings
+    supabase: SupabaseSetting
     email: EmailSettings
 
     state_file_path: Path = Path("./state.json")

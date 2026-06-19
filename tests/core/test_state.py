@@ -16,6 +16,14 @@ def clear_state_singleton():
     state_module._agent_state = None
 
 
+@pytest.fixture
+def mock_state_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Mock the state file path."""
+    path = tmp_path / "trolleyroast_state.json"
+    monkeypatch.setenv("STATE_FILE_PATH", str(path))
+    return path
+
+
 class TestAgentState:
     """`AgentState` test suite."""
 
